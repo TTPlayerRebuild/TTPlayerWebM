@@ -34,10 +34,4 @@ ZIP 只包含 AddIn/ttp_webm.dll 和 SHA256SUMS.txt。
 [源码、构建和验证说明]($repoUrl/tree/$Commit)
 [第三方来源与许可证]($repoUrl/blob/$Commit/third_party/ORIGIN.md)
 "@
-$notes += "`n`n## Third-party notices`n"
-foreach ($notice in @('third_party/libwebm/LICENSE.TXT', 'third_party/libwebm/PATENTS.TXT',
-    'third_party/libogg/COPYING', 'third_party/libvorbis/COPYING', 'third_party/opus/COPYING',
-    'docs/licenses/VC-LTL-LICENSE.txt', 'docs/licenses/YY-Thunks-LICENSE.txt')) {
-    $notes += "`n### $notice`n`n" + (Get-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot) $notice) -Raw -Encoding UTF8)
-}
 $notes | Set-Content -LiteralPath (Join-Path $ArtifactDirectory 'release-notes.md') -Encoding UTF8
