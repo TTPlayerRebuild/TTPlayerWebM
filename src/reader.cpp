@@ -1,7 +1,8 @@
+#include "ttpcomm/audio_format_probe_impl.h"
 #include "document.h"
 #include <cmath>
 namespace ttp::webm {
-class WebmReader final : public Reader, public Metadata, public Thumbnail, public MetadataCommit {
+class WebmReader final : public Reader, public Metadata, public Thumbnail, public MetadataCommit, public ttp::format::InfoSupport {
     LONG references_{1};
     std::unique_ptr<Document> doc_;
     WAVEFORMATEX format_{};
@@ -67,6 +68,9 @@ class WebmReader final : public Reader, public Metadata, public Thumbnail, publi
 
   public:
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void **out) override {
+        if (!out) return E_POINTER;
+        if (IsEqualIID(id, ttp::format::iid_info)) { *out=static_cast<ttp::format::SourceInfo*>(this); AddRef(); return S_OK; }
+
         if (!out)
             return E_POINTER;
         *out = nullptr;
@@ -101,7 +105,14 @@ class WebmReader final : public Reader, public Metadata, public Thumbnail, publi
         doc_->source.close();
         return commit_result_;
     }
-    HRESULT STDMETHODCALLTYPE Open(IStream *stream, DWORD flags) override {
+    HRESULT STDMETHODCALLTYPE Open(IStream* probe_stream, DWORD probe_flags) override {
+        const auto probed = PrepareFormatInfo(probe_stream, ttp::format::Webm);
+        if (FAILED(probed)) return probed;
+        const auto opened = OpenImpl(probe_stream, probe_flags);
+        if (opened == S_OK) { SetSourceCodec(doc_->codec.opus ? "opus" : "vorbis"); }
+        return CompleteFormatInfo(opened);
+    }
+    HRESULT OpenImpl(IStream *stream, DWORD flags) {
         if (doc_ || commit_attempted_)
             return E_UNEXPECTED;
         return protect([&]() -> HRESULT {

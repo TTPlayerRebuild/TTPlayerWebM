@@ -1,12 +1,20 @@
+#include "ttpcomm/audio_format_probe_impl.h"
 #include "common.h"
 
 namespace ttp::webm {
 HMODULE module{};
-class ReaderFactory final : public ReaderCreator {
+class ReaderFactory final : public ReaderCreator, public ttp::format::ProbeSupport {
+protected:
+    DWORD ProbeFamilies() const noexcept override { return ttp::format::Webm; }
+private:
+
     LONG references_{1};
 
   public:
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **out) override {
+        if (!out) return E_POINTER;
+        if (IsEqualIID(iid, ttp::format::iid_probe)) { *out=static_cast<ttp::format::Probe*>(this); AddRef(); return S_OK; }
+
         if (!out)
             return E_POINTER;
         *out = nullptr;
