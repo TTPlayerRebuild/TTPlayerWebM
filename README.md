@@ -1,5 +1,7 @@
 # TTPlayer WebM 输入插件
 
+最新补全与验收：[2026-10-24](docs/COMPLETION_20261024.md)。
+
 为原版千千静听及重建版增加 `.webm` / `.weba` 音频播放。项目使用原版 Reader ABI，容器解析与音频解码独立于系统 Media Foundation / DirectShow 解码器，也不要求安装 `ttp_ogg.dll`。
 
 这是新格式插件：原版没有提供可供逐字还原的 WebM 插件，复用的是从原版播放器、Ogg 插件伪代码及二进制核实的宿主接口。

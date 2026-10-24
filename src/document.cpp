@@ -405,8 +405,10 @@ void Document::open(IStream *stream) {
                 for (int j = 0; j < b->GetFrameCount(); ++j) {
                     require(packets.size() < 4000000);
                     auto f = b->GetFrame(j);
-                    require(f.pos >= 0 && f.len > 0);
-                    auto bytes = source.bytes(uint64_t(f.pos), size_t(f.len));
+                    require(f.pos >= 0 && f.len > 0 && f.len <= 16 * 1024 * 1024);
+                    // Opus TOC/frame-count and Vorbis mode fit in two bytes.
+                    // Indexing needs packet duration, not the compressed payload.
+                    auto bytes = source.bytes(uint64_t(f.pos), std::min<size_t>(2,size_t(f.len)));
                     int block{};
                     unsigned n = unsigned(codec.packet_samples(bytes, previous_block, block));
                     previous_block = block;

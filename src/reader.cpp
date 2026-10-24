@@ -1,4 +1,5 @@
 #include "ttpcomm/audio_format_probe_impl.h"
+#include "ttpcomm/pcm_format.h"
 #include "document.h"
 #include <cmath>
 namespace ttp::webm {
@@ -142,17 +143,8 @@ class WebmReader final : public Reader, public Metadata, public Thumbnail, publi
         return doc_ ? S_OK : E_UNEXPECTED;
     }
     HRESULT STDMETHODCALLTYPE Format(WAVEFORMATEX **out) override {
-        if (!out)
-            return E_POINTER;
-        *out = nullptr;
-        if (!doc_)
-            return E_UNEXPECTED;
-        auto *p = static_cast<WAVEFORMATEX *>(CoTaskMemAlloc(sizeof(format_)));
-        if (!p)
-            return E_OUTOFMEMORY;
-        *p = format_;
-        *out = p;
-        return S_OK;
+        if(!out)return E_POINTER;*out=nullptr;if(!doc_)return E_UNEXPECTED;
+        return ttp::pcm::copy_format(format_, ttp::pcm::standard_mask(format_.nChannels), format_.wBitsPerSample, out);
     }
     HRESULT STDMETHODCALLTYPE BufferSize(DWORD *out) override {
         if (!out)
